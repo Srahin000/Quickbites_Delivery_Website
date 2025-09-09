@@ -25,7 +25,7 @@ const Navigation = () => {
             <img 
               src="/screenshots/Logo.png" 
               alt="QuickBites Logo" 
-              className="h-30 w-30 object-contain"
+              className="h-20 w-20 object-contain"
             />
             <span className="text-2xl font-bold text-white">
               QuickBites
