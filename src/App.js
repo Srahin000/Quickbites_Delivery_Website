@@ -104,8 +104,7 @@ const HeroSection = () => {
 
 const AboutSection = () => {
   const stats = [
-    { number: "5.0★", label: "App Store Rating" },
-    { number: "100+", label: "Student Orders" },
+    { number: "50+", label: "Student Orders" },
     { number: "15min", label: "Average Delivery" },
     { number: "CCNY", label: "Campus Focus" }
   ];
@@ -113,9 +112,9 @@ const AboutSection = () => {
   return (
     <section id="about" className="section-padding bg-gray-50">
       <div className="container-custom">
-        <div className="text-center mb-16">
-          <h2 className="text-5xl font-bold mb-6 gradient-text">About QuickBites</h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+        <div className="text-center mb-24">
+          <h2 className="text-5xl font-bold mb-3 gradient-text">About QuickBites</h2>
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
             Revolutionizing food delivery, one bite at a time
           </p>
         </div>
@@ -152,9 +151,9 @@ const AboutSection = () => {
             </div>
           </div>
           
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6">
             {stats.map((stat, index) => (
-              <div key={index} className="card text-center">
+              <div key={index} className="card text-center flex flex-col items-center justify-center">
                 <h3 className="text-4xl font-bold gradient-text mb-2">{stat.number}</h3>
                 <p className="text-gray-600 font-medium">{stat.label}</p>
               </div>
@@ -188,25 +187,41 @@ const HowItWorksSection = () => {
   return (
     <section id="how-it-works" className="section-padding bg-white">
       <div className="container-custom">
-        <div className="text-center mb-16">
-          <h2 className="text-5xl font-bold mb-6 gradient-text">How It Works</h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+        <div className="text-center mb-24">
+          <h2 className="text-5xl font-bold mb-3 gradient-text">How It Works</h2>
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
             Getting your favorite food delivered is as easy as 1-2-3
           </p>
         </div>
         
         <div className="grid md:grid-cols-3 gap-12">
-          {steps.map((step, index) => (
-            <div key={index} className="text-center group">
-              <div className="card bg-white/90 backdrop-blur-sm border border-gray-200 p-8 rounded-2xl shadow-xl group-hover:shadow-2xl transition-all duration-300">
-                <div className="w-20 h-20 bg-gradient-to-br from-quickbites-yellow to-yellow-500 text-white rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300">
-                  {step.number}
-                </div>
-                <h3 className="text-2xl font-bold mb-4 text-gray-800">{step.title}</h3>
-                <p className="text-gray-600 leading-relaxed">{step.description}</p>
+          <div className="text-center group">
+            <div className="card bg-white/90 backdrop-blur-sm border border-gray-200 p-8 rounded-2xl shadow-xl group-hover:shadow-2xl transition-all duration-300">
+              <div className="w-20 h-20 bg-yellow-500 rounded-full mx-auto mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300" style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                <div style={{color: 'white', fontSize: '2rem', fontWeight: 'bold', lineHeight: '1'}}>1</div>
               </div>
+              <h3 className="text-2xl font-bold mb-4 text-gray-800">Browse & Order</h3>
+              <p className="text-gray-600 leading-relaxed">Open the QuickBites app and browse through restaurants. Select your favorite dishes and add them to your cart.</p>
             </div>
-          ))}
+          </div>
+          <div className="text-center group">
+            <div className="card bg-white/90 backdrop-blur-sm border border-gray-200 p-8 rounded-2xl shadow-xl group-hover:shadow-2xl transition-all duration-300">
+              <div className="w-20 h-20 bg-yellow-500 rounded-full mx-auto mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300" style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                <div style={{color: 'white', fontSize: '2rem', fontWeight: 'bold', lineHeight: '1'}}>2</div>
+              </div>
+              <h3 className="text-2xl font-bold mb-4 text-gray-800">Track Your Order</h3>
+              <p className="text-gray-600 leading-relaxed">Watch your order being prepared in real-time. Get updates on preparation status and delivery progress.</p>
+            </div>
+          </div>
+          <div className="text-center group">
+            <div className="card bg-white/90 backdrop-blur-sm border border-gray-200 p-8 rounded-2xl shadow-xl group-hover:shadow-2xl transition-all duration-300">
+              <div className="w-20 h-20 bg-yellow-500 rounded-full mx-auto mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300" style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                <div style={{color: 'white', fontSize: '2rem', fontWeight: 'bold', lineHeight: '1'}}>3</div>
+              </div>
+              <h3 className="text-2xl font-bold mb-4 text-gray-800">Enjoy Your Meal</h3>
+              <p className="text-gray-600 leading-relaxed">Receive your delicious food at your doorstep. Enjoy your meal and rate your experience to help others.</p>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -257,16 +272,14 @@ const AppDownloadSection = () => {
             
             <div className="text-center">
               <div className="card bg-white/20 backdrop-blur-md border border-white/30 p-6 rounded-2xl shadow-xl">
-                <div className="w-24 h-24 bg-gray-900 rounded-lg mb-4 mx-auto flex items-center justify-center">
-                  <div className="grid grid-cols-2 gap-1 w-16 h-16">
-                    <div className="bg-white rounded-sm"></div>
-                    <div className="bg-white rounded-sm"></div>
-                    <div className="bg-white rounded-sm"></div>
-                    <div className="bg-white rounded-sm"></div>
-                  </div>
+                <div className="w-24 h-24 bg-white rounded-lg mb-4 mx-auto flex items-center justify-center p-2">
+                  <img 
+                    src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://apps.apple.com/us/app/quickbites-delivery/id6745470307"
+                    alt="QR Code for App Store Download"
+                    className="w-full h-full object-contain"
+                  />
                 </div>
                 <p className="text-white font-medium">Scan to download</p>
-                <p className="text-sm text-white/80 mt-2">⭐ 5.0 Rating on App Store</p>
               </div>
             </div>
           </div>
@@ -301,9 +314,9 @@ const ContactSection = () => {
   return (
     <section id="contact" className="section-padding bg-gray-50">
       <div className="container-custom">
-        <div className="text-center mb-16">
-          <h2 className="text-5xl font-bold mb-6 gradient-text">Get in Touch</h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+        <div className="text-center mb-24">
+          <h2 className="text-5xl font-bold mb-3 gradient-text">Get in Touch</h2>
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
             Have questions? We'd love to hear from you
           </p>
         </div>
@@ -312,31 +325,20 @@ const ContactSection = () => {
           <div className="space-y-8">
             <div className="card bg-white/90 backdrop-blur-sm border border-gray-200 p-8 rounded-2xl shadow-xl">
               <h3 className="text-2xl font-bold mb-4 text-gray-800">📧 Email</h3>
-              <p className="text-lg text-gray-600">hello@quickbites.com</p>
-            </div>
-            <div className="card bg-white/90 backdrop-blur-sm border border-gray-200 p-8 rounded-2xl shadow-xl">
-              <h3 className="text-2xl font-bold mb-4 text-gray-800">📞 Phone</h3>
-              <p className="text-lg text-gray-600">+1 (555) 123-4567</p>
-            </div>
-            <div className="card bg-white/90 backdrop-blur-sm border border-gray-200 p-8 rounded-2xl shadow-xl">
-              <h3 className="text-2xl font-bold mb-4 text-gray-800">📍 Address</h3>
-              <p className="text-lg text-gray-600">
-                123 Food Street<br />
-                City, State 12345
-              </p>
+              <p className="text-lg text-gray-600">officialquickbite@gmail.com</p>
             </div>
             <div className="card bg-white/90 backdrop-blur-sm border border-gray-200 p-8 rounded-2xl shadow-xl">
               <h3 className="text-2xl font-bold mb-4 text-gray-800">Follow Us</h3>
               <div className="flex space-x-4">
-                {['📘', '📷', '🐦', '💼'].map((icon, index) => (
-                  <button 
-                    key={index}
-                    className="w-12 h-12 bg-quickbites-yellow text-white rounded-full flex items-center justify-center text-xl hover:bg-yellow-500 transition-colors duration-300"
-                    aria-label={`Social media link ${index + 1}`}
-                  >
-                    {icon}
-                  </button>
-                ))}
+                <a 
+                  href="https://www.instagram.com/getquickbites?utm_source=ig_web_button_share_sheet&igsh=a2IwZWZqZ3N0a3Jk"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-12 h-12 bg-quickbites-yellow text-white rounded-full flex items-center justify-center text-xl hover:bg-yellow-500 transition-colors duration-300"
+                  aria-label="Instagram"
+                >
+                  📷
+                </a>
               </div>
             </div>
           </div>
@@ -383,7 +385,7 @@ const Footer = () => {
   return (
     <footer className="bg-gray-900 text-white py-16">
       <div className="container-custom">
-        <div className="grid md:grid-cols-4 gap-8 mb-8">
+        <div className="grid md:grid-cols-3 gap-8 mb-8">
           <div>
             <div className="flex items-center space-x-1 mb-4">
               <img 
@@ -404,15 +406,6 @@ const Footer = () => {
               <li><a href="#how-it-works" className="text-gray-400 hover:text-quickbites-yellow transition-colors">How It Works</a></li>
               <li><a href="#app" className="text-gray-400 hover:text-quickbites-yellow transition-colors">Download App</a></li>
               <li><a href="#contact" className="text-gray-400 hover:text-quickbites-yellow transition-colors">Contact</a></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="text-xl font-bold mb-4 text-quickbites-yellow">Support</h4>
-            <ul className="space-y-2">
-              <li><a href="/help" className="text-gray-400 hover:text-quickbites-yellow transition-colors">Help Center</a></li>
-              <li><a href="/terms" className="text-gray-400 hover:text-quickbites-yellow transition-colors">Terms of Service</a></li>
-              <li><a href="/privacy" className="text-gray-400 hover:text-quickbites-yellow transition-colors">Privacy Policy</a></li>
-              <li><a href="/refund" className="text-gray-400 hover:text-quickbites-yellow transition-colors">Refund Policy</a></li>
             </ul>
           </div>
           <div>
