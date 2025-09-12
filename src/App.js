@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { supabase } from './supabase';
 
 // Theme colors
 export const themeColors = {
@@ -311,6 +312,61 @@ const AppDownloadSection = () => {
 };
 
 const ContactSection = () => {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    message: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState('');
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setSubmitStatus('');
+
+    try {
+      console.log('Attempting to submit form with data:', formData);
+      
+      const { data, error } = await supabase
+        .from('form_responses')
+        .insert([
+          {
+            name: formData.name,
+            email: formData.email,
+            message: formData.message
+          }
+        ]);
+
+      console.log('Supabase response - data:', data);
+      console.log('Supabase response - error:', error);
+
+      if (error) {
+        console.error('Supabase error details:', error);
+        throw error;
+      }
+
+      console.log('Form submitted successfully!');
+      setSubmitStatus('success');
+      setFormData({ name: '', email: '', message: '' });
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      console.error('Error message:', error.message);
+      console.error('Error details:', error.details);
+      setSubmitStatus('error');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <section id="contact" className="section-padding bg-gray-50">
       <div className="container-custom">
@@ -345,11 +401,27 @@ const ContactSection = () => {
           
           <div className="card bg-white/90 backdrop-blur-sm border border-gray-200 p-8 rounded-2xl shadow-xl">
             <h3 className="text-2xl font-bold mb-6 text-gray-800">Send us a Message</h3>
-            <form className="space-y-6">
+            
+            {submitStatus === 'success' && (
+              <div className="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-xl">
+                ✅ Message sent successfully! We'll get back to you soon.
+              </div>
+            )}
+            
+            {submitStatus === 'error' && (
+              <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-xl">
+                ❌ Failed to send message. Please try again or contact us directly.
+              </div>
+            )}
+            
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <input 
                   type="text" 
+                  name="name"
                   placeholder="Your Name" 
+                  value={formData.name}
+                  onChange={handleInputChange}
                   className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-quickbites-yellow focus:outline-none transition-colors duration-300"
                   required 
                 />
@@ -357,21 +429,31 @@ const ContactSection = () => {
               <div>
                 <input 
                   type="email" 
+                  name="email"
                   placeholder="Your Email" 
+                  value={formData.email}
+                  onChange={handleInputChange}
                   className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-quickbites-yellow focus:outline-none transition-colors duration-300"
                   required 
                 />
               </div>
               <div>
                 <textarea 
+                  name="message"
                   placeholder="Your Message" 
                   rows="5"
+                  value={formData.message}
+                  onChange={handleInputChange}
                   className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-quickbites-yellow focus:outline-none transition-colors duration-300 resize-vertical"
                   required
                 ></textarea>
               </div>
-              <button type="submit" className="btn-primary w-full">
-                Send Message
+              <button 
+                type="submit" 
+                disabled={isSubmitting}
+                className={`btn-primary w-full ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                {isSubmitting ? 'Sending...' : 'Send Message'}
               </button>
             </form>
           </div>

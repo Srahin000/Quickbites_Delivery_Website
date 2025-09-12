@@ -324,13 +324,26 @@ body {
 }
 
 .phone-mockup {
-  width: 20rem;
-  height: 37.5rem;
-  background: #1f2937;
-  border-radius: 3rem;
-  padding: 1.5rem;
+  width: 18rem;
+  height: 36rem;
+  background: #1a1a1a;
+  border-radius: 2.5rem;
+  padding: 0.5rem;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
   transition: transform 0.3s ease;
+  position: relative;
+}
+
+.phone-mockup::before {
+  content: '';
+  position: absolute;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4rem;
+  height: 0.25rem;
+  background: #333;
+  border-radius: 0.125rem;
 }
 
 .phone-mockup:hover {
@@ -343,6 +356,7 @@ body {
   background: white;
   border-radius: 2rem;
   overflow: hidden;
+  position: relative;
 }
 
 .object-cover {
@@ -403,11 +417,40 @@ body {
   animation: fadeInUp 0.6s ease-out;
 }
 
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes drawPath {
+  from {
+    stroke-dashoffset: 1000;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Curved Text Animation Styles */
+.curved-text {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: drawPath 3s ease-in-out forwards;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .phone-mockup {
-    width: 16rem;
-    height: 30rem;
+    width: 14rem;
+    height: 28rem;
   }
   
   .section-padding {
