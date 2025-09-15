@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Updates from './Updates';
 
 // Theme colors
 export const themeColors = {
@@ -32,11 +34,12 @@ const Navigation = () => {
             </span>
           </div>
           <div className={`md:flex md:space-x-8 ${isMenuOpen ? 'flex flex-col absolute top-16 left-0 w-full gradient-bg shadow-lg py-8 space-y-4' : 'hidden'}`}>
-            <a href="#home" className="text-white hover:text-quickbites-yellow transition-colors duration-300 font-bold text-lg">Home</a>
-            <a href="#about" className="text-white hover:text-quickbites-yellow transition-colors duration-300 font-bold text-lg">About</a>
-            <a href="#how-it-works" className="text-white hover:text-quickbites-yellow transition-colors duration-300 font-bold text-lg">How It Works</a>
-            <a href="#app" className="text-white hover:text-quickbites-yellow transition-colors duration-300 font-bold text-lg">Download App</a>
-            <a href="#contact" className="text-white hover:text-quickbites-yellow transition-colors duration-300 font-bold text-lg">Contact</a>
+            <a href="/" className="text-white hover:text-quickbites-yellow transition-colors duration-300 font-bold text-lg">Home</a>
+            <a href="/#about" className="text-white hover:text-quickbites-yellow transition-colors duration-300 font-bold text-lg">About</a>
+            <a href="/#how-it-works" className="text-white hover:text-quickbites-yellow transition-colors duration-300 font-bold text-lg">How It Works</a>
+            <a href="/#app" className="text-white hover:text-quickbites-yellow transition-colors duration-300 font-bold text-lg">Download App</a>
+            <a href="/updates" className="text-white hover:text-quickbites-yellow transition-colors duration-300 font-bold text-lg">Updates</a>
+            <a href="/#contact" className="text-white hover:text-quickbites-yellow transition-colors duration-300 font-bold text-lg">Contact</a>
           </div>
           <button 
             className="md:hidden flex flex-col space-y-1" 
@@ -152,8 +155,7 @@ const AboutSection = () => {
           </div>
           
           <div className="grid grid-cols-1 gap-6">
-            {stats.map((stat, index) => (
-              <div key={index} className="card text-center flex flex-col items-center justify-center">
+            {stats.map((stat, index) => (              <div key={index} className="card text-center flex flex-col items-center justify-center">
                 <h3 className="text-4xl font-bold gradient-text mb-2">{stat.number}</h3>
                 <p className="text-gray-600 font-medium">{stat.label}</p>
               </div>
@@ -402,10 +404,11 @@ const Footer = () => {
           <div>
             <h4 className="text-xl font-bold mb-4 text-quickbites-yellow">Quick Links</h4>
             <ul className="space-y-2">
-              <li><a href="#about" className="text-gray-400 hover:text-quickbites-yellow transition-colors">About Us</a></li>
-              <li><a href="#how-it-works" className="text-gray-400 hover:text-quickbites-yellow transition-colors">How It Works</a></li>
-              <li><a href="#app" className="text-gray-400 hover:text-quickbites-yellow transition-colors">Download App</a></li>
-              <li><a href="#contact" className="text-gray-400 hover:text-quickbites-yellow transition-colors">Contact</a></li>
+              <li><a href="/#about" className="text-gray-400 hover:text-quickbites-yellow transition-colors">About Us</a></li>
+              <li><a href="/#how-it-works" className="text-gray-400 hover:text-quickbites-yellow transition-colors">How It Works</a></li>
+              <li><a href="/#app" className="text-gray-400 hover:text-quickbites-yellow transition-colors">Download App</a></li>
+              <li><a href="/updates" className="text-gray-400 hover:text-quickbites-yellow transition-colors">Updates</a></li>
+              <li><a href="/#contact" className="text-gray-400 hover:text-quickbites-yellow transition-colors">Contact</a></li>
             </ul>
           </div>
           <div>
@@ -430,17 +433,28 @@ const Footer = () => {
   );
 };
 
+const HomePage = () => (
+  <div>
+    <HeroSection />
+    <AboutSection />
+    <HowItWorksSection />
+    <AppDownloadSection />
+    <ContactSection />
+  </div>
+);
+
 function App() {
   return (
-    <div className="App">
-      <Navigation />
-      <HeroSection />
-      <AboutSection />
-      <HowItWorksSection />
-      <AppDownloadSection />
-      <ContactSection />
-      <Footer />
-    </div>
+    <Router>
+      <div className="App">
+        <Navigation />
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/updates" element={<Updates />} />
+        </Routes>
+        <Footer />
+      </div>
+    </Router>
   );
 }
 
