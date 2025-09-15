@@ -1,6 +1,62 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { supabase } from './supabase';
 
 const Updates = () => {
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [message, setMessage] = useState('');
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setMessage('');
+
+    console.log('Form data being submitted:', formData);
+
+    try {
+      const { error } = await supabase
+        .from('Newsletter_users')
+        .insert([
+          {
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            email: formData.email
+          }
+        ]);
+
+      console.log('Supabase response:', { error });
+
+      if (error) {
+        console.error('Error subscribing:', error);
+        if (error.code === '42501') {
+          setMessage('Newsletter signup is temporarily unavailable. Please try again later.');
+        } else {
+          setMessage('Error subscribing. Please try again.');
+        }
+      } else {
+        setMessage('Successfully subscribed! Thank you.');
+        setFormData({ firstName: '', lastName: '', email: '' });
+      }
+    } catch (err) {
+      console.error('Error:', err);
+      setMessage('Error subscribing. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const updates = [
     {
       id: 1,
@@ -67,21 +123,59 @@ const Updates = () => {
 
           {/* Newsletter Signup */}
           <div className="mt-20 mb-16">
-            <div className="bg-white border-2 border-quickbites-yellow/20 p-8 rounded-3xl shadow-xl text-center max-w-4xl mx-auto">
+            <div className="bg-white border border-gray-200 p-8 rounded-2xl shadow-lg text-center max-w-2xl mx-auto">
               <h3 className="text-3xl font-bold mb-4 text-gray-800">Stay Updated</h3>
-              <p className="text-xl mb-8 text-gray-600">
+              <p className="text-lg text-gray-600 mb-8">
                 Get the latest QuickBites news and updates delivered to your inbox
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
+              
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="flex gap-4 w-full justify-center">
+              <div className="flex gap-4">
                 <input
-                  type="email"
-                  placeholder="Enter your email"
-                  className="flex-1 p-4 border-2 border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:border-quickbites-yellow transition-colors duration-300"
+                  type="text"
+                  name="firstName"
+                  placeholder="First Name"
+                  value={formData.firstName}
+                  onChange={handleInputChange}
+                  required
+                  className="w-32 p-4 border border-gray-300 rounded-lg text-gray-800 focus:outline-none focus:border-quickbites-yellow transition-colors duration-300 text-lg"
                 />
-                <button className="bg-quickbites-yellow text-black px-8 py-4 rounded-xl font-bold hover:bg-yellow-500 transition-colors duration-300">
-                  Subscribe
-                </button>
+                <input
+                  type="text"
+                  name="lastName"
+                  placeholder="Last Name"
+                  value={formData.lastName}
+                  onChange={handleInputChange}
+                  required
+                  className="w-32 p-4 border border-gray-300 rounded-lg text-gray-800 focus:outline-none focus:border-quickbites-yellow transition-colors duration-300 text-lg"
+                />
               </div>
+              <input
+                type="email"
+                name="email"
+                placeholder="Email Address"
+                value={formData.email}
+                onChange={handleInputChange}
+                required
+                className="w-64 p-4 border border-gray-300 rounded-lg text-gray-800 focus:outline-none focus:border-quickbites-yellow transition-colors duration-300 text-lg"
+              />
+            </div>
+            
+            {message && (
+              <p className={`text-sm ${message.includes('Success') ? 'text-green-600' : 'text-red-600'}`}>
+                {message}
+              </p>
+            )}
+            
+            <button 
+              type="submit"
+              disabled={isSubmitting}
+              className={`mx-auto bg-quickbites-yellow text-black p-4 px-8 rounded-lg font-semibold text-lg hover:bg-yellow-500 transition-colors duration-300 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              {isSubmitting ? 'Subscribing...' : 'Subscribe'}
+            </button>
+          </form>
             </div>
           </div>
         </div>
