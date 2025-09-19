@@ -101,7 +101,7 @@ const HeroSection = () => {
       
       <div className="container-custom relative z-10">
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-          <div className="animate-slide-in-left order-2 lg:order-1">
+          <div className="animate-slide-in-left order-1 lg:order-1">
             <div className="card bg-white/10 backdrop-blur-md border border-white/20 p-6 lg:p-8 rounded-3xl">
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-4 lg:mb-6 text-white text-shadow">
                 QuickBites
@@ -124,7 +124,7 @@ const HeroSection = () => {
             </div>
           </div>
           
-          <div className="animate-slide-in-right flex justify-center order-1 lg:order-2">
+          <div className="animate-slide-in-right flex justify-center order-2 lg:order-2">
             <div className="phone-mockup">
               <img 
                 src="/screenshots/Simulator Screenshot - iPhone 16 Plus - 2025-06-30 at 14.04.24.png" 
