@@ -123,15 +123,15 @@ const Updates = () => {
 
           {/* Newsletter Signup */}
           <div className="mt-20 mb-16">
-            <div className="bg-white border border-gray-200 p-8 rounded-2xl shadow-lg text-center max-w-2xl mx-auto">
+            <div className="bg-white border border-gray-200 p-8 rounded-2xl shadow-2xl text-center max-w-2xl mx-auto">
               <h3 className="text-3xl font-bold mb-4 text-gray-800">Stay Updated</h3>
               <p className="text-lg text-gray-600 mb-8">
                 Get the latest QuickBites news and updates delivered to your inbox
               </p>
               
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="flex gap-4 w-full justify-center">
-              <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">
+              <div className="flex flex-col sm:flex-row gap-4">
                 <input
                   type="text"
                   name="firstName"
@@ -139,7 +139,7 @@ const Updates = () => {
                   value={formData.firstName}
                   onChange={handleInputChange}
                   required
-                  className="w-32 p-4 border border-gray-300 rounded-lg text-gray-800 focus:outline-none focus:border-quickbites-yellow transition-colors duration-300 text-lg"
+                  className="w-full sm:w-32 p-4 border border-gray-300 rounded-lg text-gray-800 focus:outline-none focus:border-quickbites-yellow transition-colors duration-300 text-lg"
                 />
                 <input
                   type="text"
@@ -148,7 +148,7 @@ const Updates = () => {
                   value={formData.lastName}
                   onChange={handleInputChange}
                   required
-                  className="w-32 p-4 border border-gray-300 rounded-lg text-gray-800 focus:outline-none focus:border-quickbites-yellow transition-colors duration-300 text-lg"
+                  className="w-full sm:w-32 p-4 border border-gray-300 rounded-lg text-gray-800 focus:outline-none focus:border-quickbites-yellow transition-colors duration-300 text-lg"
                 />
               </div>
               <input
@@ -158,7 +158,7 @@ const Updates = () => {
                 value={formData.email}
                 onChange={handleInputChange}
                 required
-                className="w-64 p-4 border border-gray-300 rounded-lg text-gray-800 focus:outline-none focus:border-quickbites-yellow transition-colors duration-300 text-lg"
+                className="w-full sm:w-64 p-4 border border-gray-300 rounded-lg text-gray-800 focus:outline-none focus:border-quickbites-yellow transition-colors duration-300 text-lg"
               />
             </div>
             

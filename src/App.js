@@ -21,45 +21,78 @@ const Navigation = () => {
   };
 
   return (
-    <nav className="fixed top-0 w-full z-50 gradient-bg backdrop-blur-custom shadow-lg">
-      <div className="container-custom">
-        <div className="flex justify-between items-center h-16">
-          <div className="flex items-center space-x-1">
-            <img 
-              src="/screenshots/Logo.png" 
-              alt="QuickBites Logo" 
-              className="h-20 w-20 object-contain"
-            />
-            <span className="text-2xl font-bold text-white">
-              QuickBites
-            </span>
+    <>
+      <nav className="fixed top-0 w-full z-50 gradient-bg backdrop-blur-custom shadow-lg nav-mobile">
+        <div className="container-custom relative">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-1">
+              <img 
+                src="/screenshots/Logo.png" 
+                alt="QuickBites Logo" 
+                className="h-20 w-20 object-contain"
+              />
+              <span className="text-2xl font-bold text-white">
+                QuickBites
+              </span>
+            </div>
+            <div className={`md:flex md:space-x-8 ${isMenuOpen ? 'flex flex-col absolute top-full left-0 right-0 w-full gradient-bg shadow-lg py-6 px-4 space-y-3 z-40 mobile-dropdown' : 'hidden'}`}>
+              <a href="/" className="text-white hover:text-quickbites-yellow transition-colors duration-300 font-bold text-lg py-2 px-4 rounded-lg hover:bg-white/10" onClick={() => setIsMenuOpen(false)}>Home</a>
+              <a href="/#about" className="text-white hover:text-quickbites-yellow transition-colors duration-300 font-bold text-lg py-2 px-4 rounded-lg hover:bg-white/10" onClick={() => setIsMenuOpen(false)}>About</a>
+              <a href="/#how-it-works" className="text-white hover:text-quickbites-yellow transition-colors duration-300 font-bold text-lg py-2 px-4 rounded-lg hover:bg-white/10" onClick={() => setIsMenuOpen(false)}>How It Works</a>
+              <a href="/#app" className="text-white hover:text-quickbites-yellow transition-colors duration-300 font-bold text-lg py-2 px-4 rounded-lg hover:bg-white/10" onClick={() => setIsMenuOpen(false)}>Download App</a>
+              <a href="/updates" className="text-white hover:text-quickbites-yellow transition-colors duration-300 font-bold text-lg py-2 px-4 rounded-lg hover:bg-white/10" onClick={() => setIsMenuOpen(false)}>Updates</a>
+              <a href="/#contact" className="text-white hover:text-quickbites-yellow transition-colors duration-300 font-bold text-lg py-2 px-4 rounded-lg hover:bg-white/10" onClick={() => setIsMenuOpen(false)}>Contact</a>
+            </div>
+            <button 
+              className="md:hidden" 
+              onClick={toggleMenu}
+              aria-label="Toggle menu"
+              style={{
+                background: 'transparent',
+                border: 'none',
+                padding: '8px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '40px',
+                height: '40px'
+              }}
+            >
+              <div style={{
+                fontSize: '20px',
+                color: 'white',
+                fontWeight: 'bold',
+                lineHeight: '1',
+                textAlign: 'center',
+                fontFamily: 'Arial, sans-serif',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '100%',
+                height: '100%'
+              }}>
+                {isMenuOpen ? '✕' : '☰'}
+              </div>
+            </button>
           </div>
-          <div className={`md:flex md:space-x-8 ${isMenuOpen ? 'flex flex-col absolute top-16 left-0 w-full gradient-bg shadow-lg py-8 space-y-4' : 'hidden'}`}>
-            <a href="/" className="text-white hover:text-quickbites-yellow transition-colors duration-300 font-bold text-lg">Home</a>
-            <a href="/#about" className="text-white hover:text-quickbites-yellow transition-colors duration-300 font-bold text-lg">About</a>
-            <a href="/#how-it-works" className="text-white hover:text-quickbites-yellow transition-colors duration-300 font-bold text-lg">How It Works</a>
-            <a href="/#app" className="text-white hover:text-quickbites-yellow transition-colors duration-300 font-bold text-lg">Download App</a>
-            <a href="/updates" className="text-white hover:text-quickbites-yellow transition-colors duration-300 font-bold text-lg">Updates</a>
-            <a href="/#contact" className="text-white hover:text-quickbites-yellow transition-colors duration-300 font-bold text-lg">Contact</a>
-          </div>
-          <button 
-            className="md:hidden flex flex-col space-y-1" 
-            onClick={toggleMenu}
-            aria-label="Toggle menu"
-          >
-            <span className={`w-6 h-0.5 bg-white transition-all duration-300 ${isMenuOpen ? 'rotate-45 translate-y-1.5' : ''}`}></span>
-            <span className={`w-6 h-0.5 bg-white transition-all duration-300 ${isMenuOpen ? 'opacity-0' : ''}`}></span>
-            <span className={`w-6 h-0.5 bg-white transition-all duration-300 ${isMenuOpen ? '-rotate-45 -translate-y-1.5' : ''}`}></span>
-          </button>
         </div>
-      </div>
-    </nav>
+      </nav>
+      
+      {/* Mobile menu backdrop */}
+      {isMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/20 z-30 md:hidden"
+          onClick={() => setIsMenuOpen(false)}
+        />
+      )}
+    </>
   );
 };
 
 const HeroSection = () => {
   return (
-    <section id="home" className="gradient-bg min-h-screen flex items-center text-white relative overflow-hidden">
+    <section id="home" className="gradient-bg min-h-screen flex items-center text-white relative overflow-hidden pt-20 hero-mobile">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-20 left-20 w-72 h-72 bg-quickbites-yellow rounded-full blur-3xl"></div>
@@ -67,16 +100,16 @@ const HeroSection = () => {
       </div>
       
       <div className="container-custom relative z-10">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          <div className="animate-slide-in-left">
-            <div className="card bg-white/10 backdrop-blur-md border border-white/20 p-8 rounded-3xl">
-              <h1 className="text-6xl lg:text-7xl font-bold mb-6 text-white text-shadow">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+          <div className="animate-slide-in-left order-2 lg:order-1">
+            <div className="card bg-white/10 backdrop-blur-md border border-white/20 p-6 lg:p-8 rounded-3xl">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-4 lg:mb-6 text-white text-shadow">
                 QuickBites
-                <span className="block text-3xl lg:text-4xl font-light text-quickbites-yellow mt-2">
+                <span className="block text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-light text-quickbites-yellow mt-2">
                   Fast, Fresh, Delicious
                 </span>
               </h1>
-              <p className="text-xl mb-8 text-white/90 leading-relaxed">
+              <p className="text-base sm:text-lg lg:text-xl mb-6 lg:mb-8 text-white/90 leading-relaxed">
                 Fast, affordable food delivery made for students. Get local eats with low fees, 
                 student discounts, and quick campus-focused service around CCNY.
               </p>
@@ -91,7 +124,7 @@ const HeroSection = () => {
             </div>
           </div>
           
-          <div className="animate-slide-in-right flex justify-center">
+          <div className="animate-slide-in-right flex justify-center order-1 lg:order-2">
             <div className="phone-mockup">
               <img 
                 src="/screenshots/Simulator Screenshot - iPhone 16 Plus - 2025-06-30 at 14.04.24.png" 
@@ -213,87 +246,134 @@ const HowItWorksSection = () => {
   );
 };
 
-const AppDownloadSection = () => {
-  return (
-    <section id="app" className="section-padding gradient-bg text-white">
-      <div className="container-custom">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
-          <div>
-            <div className="card bg-white/10 backdrop-blur-md border border-white/20 p-8 rounded-3xl mb-8">
-              <h2 className="text-5xl font-bold mb-6 text-white">Download the QuickBites App</h2>
-              <p className="text-xl mb-8 text-white/90">
-                Get the full QuickBites experience on your mobile device. 
-                Order food around CCNY campus, track deliveries, and enjoy student discounts 
-                and low fees designed specifically for students.
-              </p>
-              
-              <div className="flex flex-col sm:flex-row gap-6 mb-8">
-                <a 
-                  href="https://apps.apple.com/us/app/quickbites-delivery/id6745470307" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="transition-transform duration-300 hover:scale-105"
-                >
-                  <img 
-                    src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" 
-                    alt="Download on the App Store" 
-                    className="h-16 w-auto"
-                  />
-                </a>
-                <div className="relative">
-                  <img 
-                    src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" 
-                    alt="Get it on Google Play" 
-                    className="h-16 w-auto grayscale opacity-50 cursor-not-allowed"
-                  />
-                  <div className="absolute inset-0 flex items-center justify-center">
+  const AppDownloadSection = () => {
+    const [activePhoneIndex, setActivePhoneIndex] = useState(0);
+
+    const handlePointerMove = (e) => {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = e.clientX || e.touches?.[0]?.clientX || 0;
+      const relativeX = x - rect.left;
+      const width = rect.width;
+      const percentage = Math.max(0, Math.min(1, relativeX / width));
+      
+      // Map percentage to phone index (0 to phones.length - 1)
+      const phoneCount = 6;
+      const index = Math.min(Math.floor(percentage * phoneCount), phoneCount - 1);
+      setActivePhoneIndex(index);
+    };
+
+    const handlePointerLeave = () => {
+      setActivePhoneIndex(0); // Reset to first phone when pointer leaves
+    };
+
+    return (
+      <section id="app" className="section-padding gradient-bg text-white">
+        <div className="container-custom">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <div>
+              <div className="card bg-white/10 backdrop-blur-md border border-white/20 p-8 rounded-3xl mb-8">
+                <h2 className="text-5xl font-bold mb-6 text-white">Download the QuickBites App</h2>
+                <p className="text-xl mb-8 text-white/90">
+                  Get the full QuickBites experience on your mobile device. 
+                  Order food around CCNY campus, track deliveries, and enjoy student discounts 
+                  and low fees designed specifically for students.
+                </p>
+                
+                <div className="flex flex-col sm:flex-row gap-6 mb-8 justify-center items-start">
+                  <div className="flex flex-col items-center gap-2">
+                    <a 
+                      href="https://apps.apple.com/us/app/quickbites-delivery/id6745470307" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="transition-transform duration-300 hover:scale-105"
+                    >
+                      <img 
+                        src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" 
+                        alt="Download on the App Store" 
+                        className="h-16 w-auto"
+                      />
+                    </a>
+                  </div>
+                  <div className="flex flex-col items-center gap-2">
+                    <img 
+                      src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" 
+                      alt="Get it on Google Play" 
+                      className="h-16 w-auto grayscale opacity-50 cursor-not-allowed"
+                    />
                     <span className="bg-black text-white px-3 py-1 rounded-full text-sm font-bold">
                       Coming Soon
                     </span>
                   </div>
                 </div>
               </div>
+              
+              <div className="text-center">
+                <div className="card bg-white/20 backdrop-blur-md border border-white/30 p-6 rounded-2xl shadow-xl">
+                  <div className="w-24 h-24 bg-white rounded-lg mb-4 mx-auto flex items-center justify-center p-2">
+                    <img 
+                      src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://apps.apple.com/us/app/quickbites-delivery/id6745470307"
+                      alt="QR Code for App Store Download"
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <p className="text-white font-medium">Scan to download</p>
+                </div>
+              </div>
             </div>
             
-            <div className="text-center">
-              <div className="card bg-white/20 backdrop-blur-md border border-white/30 p-6 rounded-2xl shadow-xl">
-                <div className="w-24 h-24 bg-white rounded-lg mb-4 mx-auto flex items-center justify-center p-2">
-                  <img 
-                    src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://apps.apple.com/us/app/quickbites-delivery/id6745470307"
-                    alt="QR Code for App Store Download"
-                    className="w-full h-full object-contain"
-                  />
-                </div>
-                <p className="text-white font-medium">Scan to download</p>
+            <div className="flex justify-center items-center w-full">
+              <div 
+                className="relative phone-container" 
+                style={{
+                  width: '32rem', 
+                  height: '50rem', 
+                  overflow: 'hidden',
+                  position: 'relative',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+                onMouseMove={handlePointerMove}
+                onMouseLeave={handlePointerLeave}
+                onTouchMove={handlePointerMove}
+                onTouchEnd={handlePointerLeave}
+              >
+                {[
+                  "/screenshots/Simulator Screenshot - iPhone 16 Plus - 2025-06-30 at 14.04.29.png",
+                  "/screenshots/Simulator Screenshot - iPhone 16 Plus - 2025-07-01 at 16.38.42.png",
+                  "/screenshots/Simulator Screenshot - iPhone 16 Plus - 2025-07-01 at 16.38.54.png",
+                  "/screenshots/Simulator Screenshot - iPhone 16 Plus - 2025-07-01 at 17.07.14.png",
+                  "/screenshots/Simulator Screenshot - iPhone 16 Plus - 2025-07-01 at 17.50.52.png",
+                  "/screenshots/Simulator Screenshot - iPhone 16 Plus - 2025-07-01 at 17.50.56.png"
+                ].map((screenshot, index) => (
+                  <div 
+                    key={index} 
+                    className="phone-mockup absolute cursor-pointer"
+                    style={{
+                      transform: `rotate(${index * 4 - 8}deg) translate(${index * 15 - 30}px, ${index * 20 - 40}px)`,
+                      zIndex: activePhoneIndex === index ? 10 : 6 - index,
+                      transition: 'all 0.3s ease',
+                      top: '50%',
+                      left: '50%',
+                      position: 'absolute',
+                      marginTop: '-18rem',
+                      marginLeft: '-9rem'
+                    }}
+                  >
+                    <img 
+                      src={screenshot} 
+                      alt={`QuickBites App Screenshot ${index + 1}`}
+                      className="phone-screen object-cover"
+                    />
+                  </div>
+                ))}
               </div>
             </div>
           </div>
-          
-          <div className="flex justify-center">
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
-              {[
-                "/screenshots/Simulator Screenshot - iPhone 16 Plus - 2025-06-30 at 14.04.29.png",
-                "/screenshots/Simulator Screenshot - iPhone 16 Plus - 2025-07-01 at 16.38.42.png",
-                "/screenshots/Simulator Screenshot - iPhone 16 Plus - 2025-07-01 at 16.38.54.png",
-                "/screenshots/Simulator Screenshot - iPhone 16 Plus - 2025-07-01 at 17.07.14.png",
-                "/screenshots/Simulator Screenshot - iPhone 16 Plus - 2025-07-01 at 17.50.52.png",
-                "/screenshots/Simulator Screenshot - iPhone 16 Plus - 2025-07-01 at 17.50.56.png"
-              ].map((screenshot, index) => (
-                <div key={index} className="phone-mockup">
-                  <img 
-                    src={screenshot} 
-                    alt={`QuickBites App Screenshot ${index + 1}`}
-                    className="phone-screen object-cover"
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
-      </div>
-    </section>
-  );
-};
+      </section>
+    );
+  };
 
 const ContactSection = () => {
   const [formData, setFormData] = useState({
@@ -382,7 +462,7 @@ const ContactSection = () => {
             </div>
           </div>
           
-          <div className="card bg-white/90 backdrop-blur-sm border border-gray-200 p-8 rounded-2xl shadow-xl">
+          <div className="card bg-white/90 backdrop-blur-sm border border-gray-200 p-8 rounded-2xl shadow-2xl">
             <h3 className="text-2xl font-bold mb-6 text-gray-800">Send us a Message</h3>
             
             {submitStatus === 'success' && (
@@ -505,15 +585,15 @@ const NewsletterSignup = () => {
   return (
     <section className="py-16 bg-gray-50">
       <div className="container-custom">
-        <div className="bg-white border border-gray-200 p-8 rounded-2xl shadow-lg text-center max-w-2xl mx-auto">
+        <div className="bg-white border border-gray-200 p-8 rounded-2xl shadow-2xl text-center max-w-2xl mx-auto">
           <h3 className="text-3xl font-bold mb-4 text-gray-800">Stay Updated</h3>
           <p className="text-lg text-gray-600 mb-8">
             Get the latest QuickBites news and updates delivered to your inbox
           </p>
           
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="flex gap-4 w-full justify-center">
-              <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">
+              <div className="flex flex-col sm:flex-row gap-4">
                 <input
                   type="text"
                   name="firstName"
@@ -521,7 +601,7 @@ const NewsletterSignup = () => {
                   value={formData.firstName}
                   onChange={handleInputChange}
                   required
-                  className="w-32 p-4 border border-gray-300 rounded-lg text-gray-800 focus:outline-none focus:border-quickbites-yellow transition-colors duration-300 text-lg"
+                  className="w-full sm:w-32 p-4 border border-gray-300 rounded-lg text-gray-800 focus:outline-none focus:border-quickbites-yellow transition-colors duration-300 text-lg"
                 />
                 <input
                   type="text"
@@ -530,7 +610,7 @@ const NewsletterSignup = () => {
                   value={formData.lastName}
                   onChange={handleInputChange}
                   required
-                  className="w-32 p-4 border border-gray-300 rounded-lg text-gray-800 focus:outline-none focus:border-quickbites-yellow transition-colors duration-300 text-lg"
+                  className="w-full sm:w-32 p-4 border border-gray-300 rounded-lg text-gray-800 focus:outline-none focus:border-quickbites-yellow transition-colors duration-300 text-lg"
                 />
               </div>
               <input
@@ -540,7 +620,7 @@ const NewsletterSignup = () => {
                 value={formData.email}
                 onChange={handleInputChange}
                 required
-                className="w-64 p-4 border border-gray-300 rounded-lg text-gray-800 focus:outline-none focus:border-quickbites-yellow transition-colors duration-300 text-lg"
+                className="w-full sm:w-64 p-4 border border-gray-300 rounded-lg text-gray-800 focus:outline-none focus:border-quickbites-yellow transition-colors duration-300 text-lg"
               />
             </div>
             
