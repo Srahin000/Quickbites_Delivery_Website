@@ -618,7 +618,7 @@ body {
     justify-content: center !important;
   }
   
-  .phone-mockup {
+  .phone-container .phone-mockup {
     width: 10rem !important;
     height: 20rem !important;
     top: 50% !important;
