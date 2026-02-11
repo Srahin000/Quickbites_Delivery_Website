@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Updates from './Updates';
+import AdminUpdates from './AdminUpdates';
 import { supabase } from './supabase';
 
 // Theme colors
@@ -713,6 +714,7 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/updates" element={<Updates />} />
+          <Route path="/admin/updates" element={<AdminUpdates />} />
         </Routes>
         <Footer />
       </div>

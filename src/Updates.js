@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from './supabase';
 
 const Updates = () => {
+  const [updates, setUpdates] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -9,6 +12,35 @@ const Updates = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState('');
+
+  // Fetch updates from Supabase
+  useEffect(() => {
+    fetchUpdates();
+  }, []);
+
+  const fetchUpdates = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const { data, error: fetchError } = await supabase
+        .from('updates')
+        .select('*')
+        .order('created_at', { ascending: false }); // Most recent first
+
+      if (fetchError) {
+        console.error('Error fetching updates:', fetchError);
+        setError('Failed to load updates. Please try again later.');
+      } else {
+        setUpdates(data || []);
+      }
+    } catch (err) {
+      console.error('Error:', err);
+      setError('An unexpected error occurred.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -57,16 +89,20 @@ const Updates = () => {
     }
   };
 
-  const updates = [
-    {
-      id: 1,
-      title: "🚀 Beta Launch - QuickBites is Coming October 1st!",
-      date: "September 15, 2025",
-      category: "Launch",
-      content: "🚧 QuickBites Beta Launch - October 1st! We're thrilled to share that QuickBites is officially opening its doors in beta this fall. This is the first step in bringing a faster, more affordable, and student-focused food delivery experience to CCNY. During this phase, we'll be testing our systems, learning from real orders, and working closely with students to make QuickBites the best it can be. Think of it as getting a sneak peek at what's to come — and your feedback will directly shape how we grow. Stay tuned here for live updates, new features, and ways to get involved as we build this service together.",
-      featured: true
-    }
-  ];
+  // Format date for display
+  const formatDate = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+  };
+
+  // Get featured update (first one marked as featured, or first update if none)
+  const featuredUpdate = updates.find(update => update.featured) || updates[0];
+  const otherUpdates = updates.filter(update => update.id !== featuredUpdate?.id);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -87,39 +123,70 @@ const Updates = () => {
       {/* Updates Content */}
       <section className="py-16">
         <div className="container-custom">
-
-          {/* Featured Update */}
-          <div className="mb-16">
-            <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">Featured Update</h2>
-            <div className="card bg-gradient-to-r from-quickbites-yellow/10 to-quickbites-purple/10 border border-quickbites-yellow/20 p-8 rounded-3xl shadow-xl">
-              <div className="flex items-center justify-between mb-4">
-                <span className="bg-quickbites-yellow text-white px-4 py-2 rounded-full text-sm font-bold">
-                  {updates[0].category}
-                </span>
-                <span className="text-gray-600 font-medium">{updates[0].date}</span>
-              </div>
-              <h3 className="text-4xl font-bold text-gray-800 mb-4">{updates[0].title}</h3>
-              <div className="text-lg text-gray-600 leading-relaxed whitespace-pre-line">{updates[0].content}</div>
+          {loading && (
+            <div className="text-center py-16">
+              <p className="text-xl text-gray-600">Loading updates...</p>
             </div>
-          </div>
+          )}
 
-          {/* All Updates List */}
-          <div className="space-y-8">
-            {updates.slice(1).map((update) => (
-              <div key={update.id} className="card bg-white/90 backdrop-blur-sm border border-gray-200 p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 group">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm font-medium">
-                    {update.category}
-                  </span>
-                  <span className="text-gray-500 text-sm">{update.date}</span>
+          {error && (
+            <div className="mb-8 p-4 bg-red-100 border border-red-400 text-red-700 rounded-xl">
+              {error}
+            </div>
+          )}
+
+          {!loading && !error && updates.length === 0 && (
+            <div className="text-center py-16">
+              <p className="text-xl text-gray-600">No updates available yet. Check back soon!</p>
+            </div>
+          )}
+
+          {!loading && !error && featuredUpdate && (
+            <>
+              {/* Featured Update */}
+              <div className="mb-16">
+                <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">Featured Update</h2>
+                <div className="card bg-gradient-to-r from-quickbites-yellow/10 to-quickbites-purple/10 border border-quickbites-yellow/20 p-8 rounded-3xl shadow-xl">
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="bg-quickbites-yellow text-white px-4 py-2 rounded-full text-sm font-bold">
+                      {featuredUpdate.category}
+                    </span>
+                    <span className="text-gray-600 font-medium">
+                      {formatDate(featuredUpdate.created_at)}
+                    </span>
+                  </div>
+                  <h3 className="text-4xl font-bold text-gray-800 mb-4">{featuredUpdate.title}</h3>
+                  <div className="text-lg text-gray-600 leading-relaxed whitespace-pre-line">
+                    {featuredUpdate.content}
+                  </div>
                 </div>
-                <h3 className="text-xl font-bold text-gray-800 mb-3 group-hover:text-quickbites-yellow transition-colors duration-300">
-                  {update.title}
-                </h3>
-                <div className="text-gray-600 leading-relaxed whitespace-pre-line">{update.content}</div>
               </div>
-            ))}
-          </div>
+
+              {/* All Updates List */}
+              {otherUpdates.length > 0 && (
+                <div className="space-y-8">
+                  {otherUpdates.map((update) => (
+                    <div key={update.id} className="card bg-white/90 backdrop-blur-sm border border-gray-200 p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 group">
+                      <div className="flex items-center justify-between mb-4">
+                        <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm font-medium">
+                          {update.category}
+                        </span>
+                        <span className="text-gray-500 text-sm">
+                          {formatDate(update.created_at)}
+                        </span>
+                      </div>
+                      <h3 className="text-xl font-bold text-gray-800 mb-3 group-hover:text-quickbites-yellow transition-colors duration-300">
+                        {update.title}
+                      </h3>
+                      <div className="text-gray-600 leading-relaxed whitespace-pre-line">
+                        {update.content}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
 
           {/* Newsletter Signup */}
           <div className="mt-20 mb-16">
