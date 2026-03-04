@@ -162,10 +162,9 @@ const AboutSection = () => {
             <div className="card bg-white/90 backdrop-blur-sm border border-gray-200 p-8 rounded-2xl shadow-xl">
               <h3 className="text-3xl font-bold mb-4 text-gray-800">Our Mission</h3>
               <p className="text-lg text-gray-600 leading-relaxed">
-                At QuickBites, we believe that great food should be accessible to students, 
-                delivered quickly and affordably. Our mission is to connect hungry students 
-                around CCNY campus with local restaurants through our innovative mobile app platform, 
-                offering low fees and student discounts.
+                At Quickbites, we believe that students should not need to waste their time or money on food delivery.
+                We are a student-run organization that is dedicated to providing a fast, affordable, and delicious food delivery service to the CCNY community. 
+                We aim to make sure that students can focus on their studies and not on obtaining food.
               </p>
             </div>
             
