@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Updates from './Updates';
 import AdminUpdates from './AdminUpdates';
@@ -128,7 +128,7 @@ const HeroSection = () => {
           <div className="animate-slide-in-right flex justify-center order-2 lg:order-2">
             <div className="phone-mockup">
               <img 
-                src="/screenshots/Simulator Screenshot - iPhone 16 Plus - 2025-06-30 at 14.04.24.png" 
+                src="/screenshots/newscreenshots/IMG_6683.png" 
                 alt="QuickBites App Screenshot" 
                 className="phone-screen object-cover"
               />
@@ -142,9 +142,9 @@ const HeroSection = () => {
 
 const AboutSection = () => {
   const stats = [
-    { number: "50+", label: "Student Orders" },
-    { number: "15min", label: "Average Delivery" },
-    { number: "CCNY", label: "Campus Focus" }
+    { number: "50%+", label: "Reduced Delivery Fees" },
+    { number: "15min", label: "Average Delivery Time" },
+    { number: "CCNY", label: "Campus-Focused Service" }
   ];
 
   return (
@@ -172,11 +172,11 @@ const AboutSection = () => {
               <h3 className="text-3xl font-bold mb-6 text-gray-800">Why Choose QuickBites?</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {[
-                  "⚡ Lightning-fast delivery times",
+                  "⚡ Predictable delivery times",
                   "🎓 Student discounts & low fees",
                   "🏫 Campus-focused service",
-                  "📱 User-friendly mobile app",
-                  "💳 Secure payment options",
+                  "📱 Easy to use mobile app",
+                  "💳 Secure payment options through stripe",
                   "⭐ Real-time order tracking"
                 ].map((feature, index) => (
                   <div key={index} className="flex items-center space-x-3 p-4 bg-gradient-to-r from-quickbites-yellow/10 to-quickbites-purple/10 rounded-xl border border-quickbites-yellow/20">
@@ -237,7 +237,7 @@ const HowItWorksSection = () => {
                 <div style={{color: 'white', fontSize: '2rem', fontWeight: 'bold', lineHeight: '1'}}>3</div>
               </div>
               <h3 className="text-2xl font-bold mb-4 text-gray-800">Enjoy Your Meal</h3>
-              <p className="text-gray-600 leading-relaxed">Receive your delicious food at your doorstep. Enjoy your meal and rate your experience to help others.</p>
+              <p className="text-gray-600 leading-relaxed">Receive your delicious food at the drop-off point. Enjoy your meal and rate your experience to help others.</p>
             </div>
           </div>
         </div>
@@ -246,25 +246,53 @@ const HowItWorksSection = () => {
   );
 };
 
-  const AppDownloadSection = () => {
-    const [activePhoneIndex, setActivePhoneIndex] = useState(0);
+  const PHONE_SCREENSHOTS = [
+    "/screenshots/newscreenshots/IMG_6685.png",
+    "/screenshots/newscreenshots/IMG_6684.png",
+    "/screenshots/newscreenshots/IMG_6686.png",
+    "screenshots/newscreenshots/Screenshot 2026-03-04 at 12.08.36 PM.png",
+    "/screenshots/newscreenshots/IMG_6687.png",
+    "/screenshots/newscreenshots/IMG_6688.png"
+  ];
+  const phoneCount = PHONE_SCREENSHOTS.length;
 
-    const handlePointerMove = (e) => {
-      const rect = e.currentTarget.getBoundingClientRect();
-      const x = e.clientX || e.touches?.[0]?.clientX || 0;
-      const relativeX = x - rect.left;
+  const AppDownloadSection = () => {
+    // Continuous progress 0–1 for smooth interpolation (not discrete index)
+    const [phoneProgress, setPhoneProgress] = useState(0);
+    const boxRef = useRef(null);
+
+    const updateProgressFromClientX = useCallback((clientX) => {
+      const el = boxRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const relativeX = clientX - rect.left;
       const width = rect.width;
       const percentage = Math.max(0, Math.min(1, relativeX / width));
-      
-      // Map percentage to phone index (0 to phones.length - 1)
-      const phoneCount = 6;
-      const index = Math.min(Math.floor(percentage * phoneCount), phoneCount - 1);
-      setActivePhoneIndex(index);
-    };
+      setPhoneProgress(percentage);
+    }, []);
 
-    const handlePointerLeave = () => {
-      setActivePhoneIndex(0); // Reset to first phone when pointer leaves
-    };
+    const handlePointerMove = useCallback((e) => {
+      const x = e.clientX ?? e.touches?.[0]?.clientX ?? 0;
+      updateProgressFromClientX(x);
+    }, [updateProgressFromClientX]);
+
+    const handlePointerLeave = useCallback(() => {
+      setPhoneProgress(0);
+    }, []);
+
+    // Track mouse in bounding box even when not over the phone images (e.g. document move)
+    useEffect(() => {
+      const onMove = (e) => {
+        const el = boxRef.current;
+        if (!el) return;
+        const rect = el.getBoundingClientRect();
+        const x = e.clientX;
+        const inBox = x >= rect.left && x <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom;
+        if (inBox) updateProgressFromClientX(x);
+      };
+      window.addEventListener('mousemove', onMove, { passive: true });
+      return () => window.removeEventListener('mousemove', onMove);
+    }, [updateProgressFromClientX]);
 
     return (
       <section id="app" className="section-padding gradient-bg text-white">
@@ -322,51 +350,61 @@ const HowItWorksSection = () => {
             </div>
             
             <div className="flex justify-center items-center w-full">
-              <div 
-                className="relative phone-container" 
-                style={{
-                  width: '32rem', 
-                  height: '50rem', 
-                  overflow: 'hidden',
-                  position: 'relative',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}
+              {/* Bounding box for mouse tracking – tracks X anywhere in this area, not just over images */}
+              <div
+                ref={boxRef}
+                className="relative flex items-center justify-center w-full min-h-[50rem] touch-none"
+                style={{ minWidth: '32rem' }}
                 onMouseMove={handlePointerMove}
                 onMouseLeave={handlePointerLeave}
                 onTouchMove={handlePointerMove}
                 onTouchEnd={handlePointerLeave}
               >
-                {[
-                  "/screenshots/Simulator Screenshot - iPhone 16 Plus - 2025-06-30 at 14.04.29.png",
-                  "/screenshots/Simulator Screenshot - iPhone 16 Plus - 2025-07-01 at 16.38.42.png",
-                  "/screenshots/Simulator Screenshot - iPhone 16 Plus - 2025-07-01 at 16.38.54.png",
-                  "/screenshots/Simulator Screenshot - iPhone 16 Plus - 2025-07-01 at 17.07.14.png",
-                  "/screenshots/Simulator Screenshot - iPhone 16 Plus - 2025-07-01 at 17.50.52.png",
-                  "/screenshots/Simulator Screenshot - iPhone 16 Plus - 2025-07-01 at 17.50.56.png"
-                ].map((screenshot, index) => (
-                  <div 
-                    key={index} 
-                    className="phone-mockup absolute cursor-pointer"
-                    style={{
-                      transform: `rotate(${index * 4 - 8}deg) translate(${index * 15 - 30}px, ${index * 20 - 40}px)`,
-                      zIndex: activePhoneIndex === index ? 10 : 6 - index,
-                      transition: 'all 0.3s ease',
-                      top: '50%',
-                      left: '50%',
-                      position: 'absolute',
-                      marginTop: '-18rem',
-                      marginLeft: '-9rem'
-                    }}
-                  >
-                    <img 
-                      src={screenshot} 
-                      alt={`QuickBites App Screenshot ${index + 1}`}
-                      className="phone-screen object-cover"
-                    />
-                  </div>
-                ))}
+                <div 
+                  className="relative phone-container" 
+                  style={{
+                    width: '32rem', 
+                    height: '50rem', 
+                    overflow: 'hidden',
+                    position: 'relative',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    pointerEvents: 'none'
+                  }}
+                >
+                  {PHONE_SCREENSHOTS.map((screenshot, index) => {
+                    // Smooth interpolation: progress 0..1 maps to "active position" 0..(n-1)
+                    const activePos = phoneProgress * (phoneCount - 1);
+                    const distance = Math.abs(activePos - index);
+                    const activity = Math.max(0, 1 - distance);
+                    const scale = 0.92 + 0.08 * activity;
+                    const zIndex = 5 + Math.round(activity * 5);
+                    return (
+                      <div 
+                        key={index} 
+                        className="phone-mockup absolute"
+                        style={{
+                          transform: `rotate(${index * 4 - 8}deg) translate(${index * 15 - 30}px, ${index * 20 - 40}px) scale(${scale})`,
+                          zIndex,
+                          transition: 'transform 0.25s ease-out',
+                          top: '50%',
+                          left: '50%',
+                          position: 'absolute',
+                          marginTop: '-18rem',
+                          marginLeft: '-9rem',
+                          pointerEvents: 'none'
+                        }}
+                      >
+                        <img 
+                          src={screenshot} 
+                          alt={`QuickBites App Screenshot ${index + 1}`}
+                          className="phone-screen object-cover"
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </div>
