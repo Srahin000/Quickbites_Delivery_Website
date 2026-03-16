@@ -2,6 +2,7 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Updates from './Updates';
 import AdminUpdates from './AdminUpdates';
+import Partners from './Partners';
 import { supabase } from './supabase';
 
 // Theme colors
@@ -42,6 +43,7 @@ const Navigation = () => {
               <a href="/#how-it-works" className="text-white hover:text-quickbites-yellow transition-colors duration-300 font-bold text-lg py-2 px-4 rounded-lg hover:bg-white/10" onClick={() => setIsMenuOpen(false)}>How It Works</a>
               <a href="/#app" className="text-white hover:text-quickbites-yellow transition-colors duration-300 font-bold text-lg py-2 px-4 rounded-lg hover:bg-white/10" onClick={() => setIsMenuOpen(false)}>Download App</a>
               <a href="/updates" className="text-white hover:text-quickbites-yellow transition-colors duration-300 font-bold text-lg py-2 px-4 rounded-lg hover:bg-white/10" onClick={() => setIsMenuOpen(false)}>Updates</a>
+              <a href="/partners" className="text-white hover:text-quickbites-yellow transition-colors duration-300 font-bold text-lg py-2 px-4 rounded-lg hover:bg-white/10" onClick={() => setIsMenuOpen(false)}>Partners</a>
               <a href="/#contact" className="text-white hover:text-quickbites-yellow transition-colors duration-300 font-bold text-lg py-2 px-4 rounded-lg hover:bg-white/10" onClick={() => setIsMenuOpen(false)}>Contact</a>
             </div>
             <button 
@@ -707,6 +709,7 @@ const Footer = () => {
               <li><a href="/#how-it-works" className="text-gray-400 hover:text-quickbites-yellow transition-colors">How It Works</a></li>
               <li><a href="/#app" className="text-gray-400 hover:text-quickbites-yellow transition-colors">Download App</a></li>
               <li><a href="/updates" className="text-gray-400 hover:text-quickbites-yellow transition-colors">Updates</a></li>
+              <li><a href="/partners" className="text-gray-400 hover:text-quickbites-yellow transition-colors">Partners</a></li>
               <li><a href="/#contact" className="text-gray-400 hover:text-quickbites-yellow transition-colors">Contact</a></li>
             </ul>
           </div>
@@ -751,6 +754,7 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/updates" element={<Updates />} />
+          <Route path="/partners" element={<Partners />} />
           <Route path="/admin/updates" element={<AdminUpdates />} />
         </Routes>
         <Footer />
