@@ -1,19 +1,6 @@
 import React, { useState } from 'react';
 import { supabase } from './supabase';
 
-const generatePartnerCode = (orgName) => {
-  const prefix = orgName
-    .replace(/[^a-zA-Z]/g, '')
-    .substring(0, 4)
-    .toUpperCase();
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let suffix = '';
-  for (let i = 0; i < 5; i++) {
-    suffix += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return `${prefix}-${suffix}`;
-};
-
 const formatCurrency = (amount) => {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -30,18 +17,22 @@ const formatDate = (dateString) => {
   });
 };
 
-const COMMISSION_PERCENTAGE = 10;
+/** Shown in UI; must match `commission_percentage` set in register_partner_organization (SQL). */
+const COMMISSION_PERCENTAGE = 3;
 
 const Partners = () => {
   const [view, setView] = useState('landing');
 
   // Registration form state
   const [formData, setFormData] = useState({
+    clubCode: '',
     contactName: '',
     organization: '',
     email: '',
     phone: '',
     description: '',
+    dashboardPassword: '',
+    confirmDashboardPassword: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -50,6 +41,7 @@ const Partners = () => {
 
   // Dashboard state
   const [dashboardCode, setDashboardCode] = useState('');
+  const [dashboardPassword, setDashboardPassword] = useState('');
   const [dashboardLoading, setDashboardLoading] = useState(false);
   const [dashboardError, setDashboardError] = useState('');
   const [dashboardData, setDashboardData] = useState(null);
@@ -59,69 +51,90 @@ const Partners = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleClubCodeChange = (e) => {
+    const next = e.target.value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 5);
+    setFormData((prev) => ({ ...prev, clubCode: next }));
+  };
+
+  const rpcErrorText = (err) =>
+    [err?.message, err?.details, err?.hint].filter(Boolean).join(' — ');
+
+  const mapRegisterRpcError = (fullText) => {
+    const m = (fullText || '').toLowerCase();
+    if (m.includes('invalid_club_code')) {
+      return 'Choose a club code of exactly 5 letters (A–Z).';
+    }
+    if (m.includes('weak_password')) {
+      return 'Dashboard password must be at least 8 characters.';
+    }
+    if (m.includes('duplicate_club_code') || m.includes('unique violation') || m.includes('23505')) {
+      return 'That club code is already taken (or that coupon code already exists). Pick another code.';
+    }
+    if (m.includes('does not exist') && m.includes('partners')) {
+      return 'Database is missing the partners table. Run partners_prereqs_only.sql in Supabase, then try again.';
+    }
+    if (m.includes('function') && m.includes('register_partner_organization') && m.includes('does not exist')) {
+      return 'Database function register_partner_organization is missing. Run club_partner_dashboard_migration.sql in Supabase.';
+    }
+    if (m.includes('permission denied') || m.includes('rls') || m.includes('row-level security')) {
+      return 'Database permissions blocked registration. Check RLS policies and GRANT EXECUTE on the RPC for the anon role.';
+    }
+    return null;
+  };
+
   const handleRegister = async (e) => {
     e.preventDefault();
     setError('');
     setIsSubmitting(true);
 
     try {
-      const partnerCode = generatePartnerCode(formData.organization);
+      if (formData.clubCode.length !== 5) {
+        setError('Club code must be exactly 5 letters (all uppercase).');
+        setIsSubmitting(false);
+        return;
+      }
+      if (formData.dashboardPassword.length < 8) {
+        setError('Dashboard password must be at least 8 characters.');
+        setIsSubmitting(false);
+        return;
+      }
+      if (formData.dashboardPassword !== formData.confirmDashboardPassword) {
+        setError('Passwords do not match.');
+        setIsSubmitting(false);
+        return;
+      }
 
-      // Create the club entry
-      const { data: clubData, error: clubError } = await supabase
-        .from('clubs')
-        .insert([
-          {
-            club_code: partnerCode,
-            club_name: formData.organization.trim(),
-            commission_percentage: COMMISSION_PERCENTAGE,
-            total_earned: 0,
-            is_active: true,
-          },
-        ])
-        .select()
-        .single();
+      const org = (formData.organization ?? '').trim();
+      const { data, error: rpcError } = await supabase.rpc('register_partner_organization', {
+        p_club_code: String(formData.clubCode ?? ''),
+        p_club_name: org,
+        p_dashboard_password: String(formData.dashboardPassword ?? ''),
+        p_contact_name: (formData.contactName ?? '').trim(),
+        p_organization: org,
+        p_email: (formData.email ?? '').trim(),
+        p_phone: (formData.phone ?? '').trim(),
+        p_description: (formData.description ?? '').trim(),
+      });
 
-      if (clubError) {
-        if (clubError.code === '23505') {
-          setError('A partner with this organization code already exists. Please try again.');
-          setIsSubmitting(false);
-          return;
+      if (rpcError) {
+        const full = rpcErrorText(rpcError);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('register_partner_organization RPC error:', rpcError.code, full);
         }
-        throw clubError;
+        const mapped = mapRegisterRpcError(full);
+        setError(mapped || full || 'Something went wrong. Please try again or contact us.');
+        setIsSubmitting(false);
+        return;
       }
 
-      // Create a coupon for the partner code (10% off delivery fee)
-      const { error: couponError } = await supabase.from('coupons').insert([
-        {
-          coupon_code: partnerCode,
-          percentage: 10,
-          valid: true,
-          category: 'partner',
-          max_usage: 9999,
-          categories: 'delivery-fee',
-        },
-      ]);
-
-      if (couponError) {
-        console.error('Coupon creation error:', couponError);
+      const clubCode = data?.club_code;
+      if (!clubCode) {
+        setError('Registration did not complete. Please run the database migration (club_partner_dashboard_migration.sql) or contact support.');
+        setIsSubmitting(false);
+        return;
       }
 
-      // Create the partner contact record
-      const { error: partnerError } = await supabase.from('partners').insert([
-        {
-          club_id: clubData.id,
-          contact_name: formData.contactName.trim(),
-          organization: formData.organization.trim(),
-          email: formData.email.trim(),
-          phone: formData.phone.trim() || null,
-          description: formData.description.trim() || null,
-        },
-      ]);
-
-      if (partnerError) throw partnerError;
-
-      setGeneratedCode(partnerCode);
+      setGeneratedCode(clubCode);
       setView('success');
     } catch (err) {
       console.error('Registration error:', err);
@@ -156,28 +169,36 @@ const Partners = () => {
 
     try {
       const code = dashboardCode.trim().toUpperCase();
-
-      // Look up the club
-      const { data: club, error: clubError } = await supabase
-        .from('clubs')
-        .select('*')
-        .eq('club_code', code)
-        .single();
-
-      if (clubError || !club) {
-        setDashboardError('Partner code not found. Please check your code and try again.');
+      if (code.length !== 5 || !/^[A-Z]{5}$/.test(code)) {
+        setDashboardError('Enter your 5-letter club code (A–Z).');
+        setDashboardLoading(false);
+        return;
+      }
+      if (!dashboardPassword) {
+        setDashboardError('Enter the dashboard password you set during registration.');
         setDashboardLoading(false);
         return;
       }
 
-      // Get partner info
+      const { data: club, error: verifyError } = await supabase.rpc('verify_club_dashboard_access', {
+        p_club_code: code,
+        p_password: dashboardPassword,
+      });
+
+      if (verifyError) throw verifyError;
+
+      if (!club || !club.id) {
+        setDashboardError('Invalid club code or password.');
+        setDashboardLoading(false);
+        return;
+      }
+
       const { data: partner } = await supabase
         .from('partners')
         .select('*')
         .eq('club_id', club.id)
         .single();
 
-      // Get all orders for this club
       const { data: orders, error: ordersError } = await supabase
         .from('club_orders')
         .select('*')
@@ -188,7 +209,7 @@ const Partners = () => {
 
       const totalOrders = orders?.length || 0;
       const totalRevenue = orders?.reduce((sum, o) => sum + Number(o.order_total || 0), 0) || 0;
-      const totalEarnings = orders?.reduce((sum, o) => sum + Number(o.commission_amount || 0), 0) || 0;
+      const totalEarnings = Number(club.total_earned ?? 0);
       const pendingPayout = orders
         ?.filter((o) => !o.paid_out)
         .reduce((sum, o) => sum + Number(o.commission_amount || 0), 0) || 0;
@@ -200,8 +221,10 @@ const Partners = () => {
         stats: { totalOrders, totalRevenue, totalEarnings, pendingPayout },
       });
     } catch (err) {
-      console.error('Dashboard lookup error:', err);
-      setDashboardError('Something went wrong. Please try again.');
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Dashboard lookup error:', rpcErrorText(err) || err);
+      }
+      setDashboardError(rpcErrorText(err) || 'Something went wrong. Please try again.');
     } finally {
       setDashboardLoading(false);
     }
@@ -276,7 +299,7 @@ const Partners = () => {
                 {
                   icon: '💰',
                   title: 'Earn Commission',
-                  desc: `Get ${COMMISSION_PERCENTAGE}% commission on every order placed using your partner code.`,
+                  desc: `Get ${COMMISSION_PERCENTAGE}% of each order's food subtotal (before tax and delivery) when members use your club code in the app.`,
                 },
                 {
                   icon: '📊',
@@ -320,7 +343,8 @@ const Partners = () => {
           <div className="card bg-white p-8 rounded-2xl shadow-2xl">
             <h2 className="text-3xl font-bold text-gray-800 mb-2">Partner Registration</h2>
             <p className="text-gray-600 mb-8">
-              Fill out the form below and we'll generate your exclusive partner code.
+              Choose a 5-letter code for your organization (used in the QuickBites app) and a dashboard
+              password to view earnings on this site.
             </p>
 
             {error && (
@@ -330,6 +354,27 @@ const Partners = () => {
             )}
 
             <form onSubmit={handleRegister} className="space-y-6">
+              <div>
+                <label className="block text-gray-700 font-medium mb-2">
+                  Club code (5 letters, A–Z) *
+                </label>
+                <input
+                  type="text"
+                  name="clubCode"
+                  value={formData.clubCode}
+                  onChange={handleClubCodeChange}
+                  placeholder="e.g. CHESS"
+                  maxLength={5}
+                  autoComplete="off"
+                  spellCheck={false}
+                  className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-quickbites-yellow focus:outline-none transition-colors duration-300 font-mono text-lg tracking-widest uppercase"
+                  required
+                />
+                <p className="text-sm text-gray-500 mt-2">
+                  This exact code is stored for your club and used in the mobile app at checkout.
+                </p>
+              </div>
+
               <div>
                 <label className="block text-gray-700 font-medium mb-2">Contact Name *</label>
                 <input
@@ -395,12 +440,45 @@ const Partners = () => {
                 />
               </div>
 
+              <div>
+                <label className="block text-gray-700 font-medium mb-2">Dashboard password *</label>
+                <input
+                  type="password"
+                  name="dashboardPassword"
+                  value={formData.dashboardPassword}
+                  onChange={handleInputChange}
+                  placeholder="At least 8 characters"
+                  autoComplete="new-password"
+                  className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-quickbites-yellow focus:outline-none transition-colors duration-300"
+                  required
+                  minLength={8}
+                />
+                <p className="text-sm text-gray-500 mt-2">
+                  Use this password with your club code to open the partner dashboard on this website.
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-gray-700 font-medium mb-2">Confirm dashboard password *</label>
+                <input
+                  type="password"
+                  name="confirmDashboardPassword"
+                  value={formData.confirmDashboardPassword}
+                  onChange={handleInputChange}
+                  placeholder="Re-enter password"
+                  autoComplete="new-password"
+                  className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-quickbites-yellow focus:outline-none transition-colors duration-300"
+                  required
+                  minLength={8}
+                />
+              </div>
+
               <button
                 type="submit"
                 disabled={isSubmitting}
                 className={`btn-primary w-full text-lg ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
-                {isSubmitting ? 'Creating your partner code...' : 'Register as Partner'}
+                {isSubmitting ? 'Creating your partner account...' : 'Register as Partner'}
               </button>
             </form>
           </div>
@@ -418,15 +496,17 @@ const Partners = () => {
             <div className="text-6xl mb-6">🎉</div>
             <h2 className="text-3xl font-bold text-gray-800 mb-4">Welcome Aboard!</h2>
             <p className="text-lg text-gray-600 mb-8">
-              Your partner account has been created. Share the code below with your members so they
-              can get discounts on the QuickBites app. You'll earn{' '}
-              <span className="font-bold text-quickbites-purple">{COMMISSION_PERCENTAGE}% commission</span>{' '}
-              on every order they place.
+              Your partner account has been created. Share your club code with members for the QuickBites
+              app. Your organization earns{' '}
+              <span className="font-bold text-quickbites-purple">{COMMISSION_PERCENTAGE}%</span> of each
+              order's food subtotal (excluding tax and delivery) when the code is used at checkout.
+              Members can still get delivery-fee discounts when your code is applied as a coupon where
+              configured.
             </p>
 
             <div className="bg-gray-50 border-2 border-dashed border-quickbites-yellow rounded-2xl p-8 mb-8">
               <p className="text-sm text-gray-500 uppercase tracking-wider font-bold mb-2">
-                Your Partner Code
+                Your club code
               </p>
               <p className="text-4xl font-mono font-bold gradient-text tracking-widest mb-4">
                 {generatedCode}
@@ -440,7 +520,7 @@ const Partners = () => {
             </div>
 
             <p className="text-gray-500 text-sm mb-8">
-              Save this code — you'll need it to access your partner dashboard.
+              Save your club code and dashboard password — you need both to open the partner dashboard.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -456,7 +536,16 @@ const Partners = () => {
               <button
                 onClick={() => {
                   setView('landing');
-                  setFormData({ contactName: '', organization: '', email: '', phone: '', description: '' });
+                  setFormData({
+                    clubCode: '',
+                    contactName: '',
+                    organization: '',
+                    email: '',
+                    phone: '',
+                    description: '',
+                    dashboardPassword: '',
+                    confirmDashboardPassword: '',
+                  });
                   setGeneratedCode('');
                 }}
                 className="btn-secondary"
@@ -480,6 +569,7 @@ const Partners = () => {
               setView('landing');
               setDashboardData(null);
               setDashboardCode('');
+              setDashboardPassword('');
               setDashboardError('');
             }}
             className="text-gray-600 hover:text-quickbites-yellow transition-colors mb-6 font-medium"
@@ -488,25 +578,42 @@ const Partners = () => {
           </button>
 
           <h1 className="text-4xl font-bold text-gray-800 mb-2">Partner Dashboard</h1>
-          <p className="text-gray-600 mb-8">Enter your partner code to view your earnings and orders.</p>
+          <p className="text-gray-600 mb-8">
+            Sign in with the 5-letter club code you chose and the dashboard password you set at
+            registration.
+          </p>
 
           {/* Lookup form */}
           <div className="card bg-white p-6 rounded-2xl shadow-xl mb-8">
-            <form onSubmit={handleDashboardLookup} className="flex flex-col sm:flex-row gap-4">
+            <form onSubmit={handleDashboardLookup} className="flex flex-col gap-4">
               <input
                 type="text"
                 value={dashboardCode}
-                onChange={(e) => setDashboardCode(e.target.value.toUpperCase())}
-                placeholder="Enter your partner code (e.g. CCNY-AB123)"
-                className="flex-1 p-4 border-2 border-gray-200 rounded-xl focus:border-quickbites-yellow focus:outline-none transition-colors duration-300 font-mono text-lg tracking-wider uppercase"
+                onChange={(e) =>
+                  setDashboardCode(e.target.value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 5))
+                }
+                placeholder="Club code (5 letters)"
+                maxLength={5}
+                autoComplete="username"
+                spellCheck={false}
+                className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-quickbites-yellow focus:outline-none transition-colors duration-300 font-mono text-lg tracking-wider uppercase"
+                required
+              />
+              <input
+                type="password"
+                value={dashboardPassword}
+                onChange={(e) => setDashboardPassword(e.target.value)}
+                placeholder="Dashboard password"
+                autoComplete="current-password"
+                className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-quickbites-yellow focus:outline-none transition-colors duration-300"
                 required
               />
               <button
                 type="submit"
                 disabled={dashboardLoading}
-                className={`btn-primary whitespace-nowrap ${dashboardLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className={`btn-primary whitespace-nowrap w-full sm:w-auto ${dashboardLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
-                {dashboardLoading ? 'Loading...' : 'View Dashboard'}
+                {dashboardLoading ? 'Loading...' : 'View dashboard'}
               </button>
             </form>
             {dashboardError && (
@@ -563,7 +670,7 @@ const Partners = () => {
                     textColor: 'text-purple-700',
                   },
                   {
-                    label: 'Total Earnings',
+                    label: 'Total earned (organization)',
                     value: formatCurrency(dashboardData.stats.totalEarnings),
                     color: 'bg-green-50 border-green-200',
                     textColor: 'text-green-700',
@@ -591,7 +698,9 @@ const Partners = () => {
                   <span className="text-2xl">💡</span>
                   <p className="text-gray-700">
                     You earn <span className="font-bold">{dashboardData.club.commission_percentage}%</span>{' '}
-                    commission on every order placed with your code. Payouts are processed monthly.
+                    of each qualifying order's food subtotal (tax and delivery excluded) when your club
+                    code is used in the app. The green total above is your organization's running balance
+                    from those commissions. Payouts are processed monthly.
                     {dashboardData.club.last_payout_date && (
                       <span className="ml-1">
                         Last payout: {formatDate(dashboardData.club.last_payout_date)}

@@ -1,12 +1,9 @@
--- Partners Setup SQL
--- Run this in your Supabase SQL Editor
+-- Run this if you already ran club_partner_dashboard_migration.sql but skipped partners_setup.sql
 --
--- Order: run this file first, then club_partner_dashboard_migration.sql
---
--- If you already ran club_partner_dashboard_migration.sql only, run partners_prereqs_only.sql instead
--- of this whole file — section 3 below would re-open anonymous SELECT on clubs and leak password hashes.
+-- DO NOT run the "clubs" policies section from partners_setup.sql afterward — that would re-open
+-- anonymous SELECT on public.clubs and expose dashboard_password_hash.
 
--- 1. Create partners table to store contact info
+-- 1. partners table (required by register_partner_organization + dashboard)
 CREATE TABLE IF NOT EXISTS public.partners (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   club_id uuid REFERENCES public.clubs(id) ON DELETE CASCADE,
@@ -19,44 +16,30 @@ CREATE TABLE IF NOT EXISTS public.partners (
   CONSTRAINT partners_pkey PRIMARY KEY (id)
 );
 
--- 2. Enable RLS on partners
 ALTER TABLE public.partners ENABLE ROW LEVEL SECURITY;
 
--- Allow anonymous inserts (partner registration form is public)
+DROP POLICY IF EXISTS "Allow anonymous insert on partners" ON public.partners;
 CREATE POLICY "Allow anonymous insert on partners"
   ON public.partners FOR INSERT
   TO anon, authenticated
   WITH CHECK (true);
 
--- Allow reading partner data by anyone (needed for dashboard lookup)
+DROP POLICY IF EXISTS "Allow anonymous select on partners" ON public.partners;
 CREATE POLICY "Allow anonymous select on partners"
   ON public.partners FOR SELECT
   TO anon, authenticated
   USING (true);
 
--- 3. RLS policies for clubs table (if not already set)
-ALTER TABLE public.clubs ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Allow anonymous insert on clubs"
-  ON public.clubs FOR INSERT
-  TO anon, authenticated
-  WITH CHECK (true);
-
-CREATE POLICY "Allow anonymous select on clubs"
-  ON public.clubs FOR SELECT
-  TO anon, authenticated
-  USING (true);
-
--- 4. RLS policies for club_orders (read access for dashboard)
+-- 2. club_orders: dashboard lists orders (anon SELECT)
 ALTER TABLE public.club_orders ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Allow anonymous select on club_orders" ON public.club_orders;
 CREATE POLICY "Allow anonymous select on club_orders"
   ON public.club_orders FOR SELECT
   TO anon, authenticated
   USING (true);
 
--- 5. RLS policies for coupons (insert for partner code creation)
--- Only add if not already present
+-- 3. coupons insert (optional if you insert coupons from elsewhere; RPC uses SECURITY DEFINER)
 DO $$
 BEGIN
   IF NOT EXISTS (
@@ -66,8 +49,9 @@ BEGIN
   END IF;
 END $$;
 
--- 6. Function to update clubs.total_earned when club_orders are inserted
--- SECURITY DEFINER so the UPDATE succeeds when clubs has RLS and no client UPDATE policy.
+-- 4. Keep clubs.total_earned in sync when mobile inserts club_orders
+-- SECURITY DEFINER: RLS on public.clubs has no UPDATE policy for anon/authenticated; without this,
+-- the trigger would run as the invoker and the UPDATE on clubs would match zero rows / be denied.
 CREATE OR REPLACE FUNCTION public.update_club_total_earned()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -86,4 +70,4 @@ DROP TRIGGER IF EXISTS trg_update_club_total_earned ON public.club_orders;
 CREATE TRIGGER trg_update_club_total_earned
   AFTER INSERT ON public.club_orders
   FOR EACH ROW
-  EXECUTE FUNCTION update_club_total_earned();
+  EXECUTE FUNCTION public.update_club_total_earned();
