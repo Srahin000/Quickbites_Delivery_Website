@@ -5,6 +5,7 @@
 -- (partners table, club_orders RLS, total_earned trigger). Do not re-add open SELECT on clubs.
 --
 -- Adds dashboard password (bcrypt) on clubs, 3% commission for new registrations,
+-- and creates new club accounts/codes in an inactive state until approved by admins,
 -- and RPCs so the website never exposes password hashes via public SELECT on clubs.
 --
 -- Mobile / backend: when a user applies a club code at checkout, insert into club_orders with
@@ -75,7 +76,7 @@ BEGIN
     trim(p_club_name),
     3,
     0,
-    true,
+    false,
     extensions.crypt(trim(p_dashboard_password), extensions.gen_salt('bf'))
   )
   RETURNING id INTO new_club_id;
@@ -91,7 +92,7 @@ BEGIN
   );
 
   INSERT INTO public.coupons (coupon_code, percentage, valid, category, max_usage, categories)
-  VALUES (v_code, 10, true, 'club', 9999, 'delivery-fee');
+  VALUES (v_code, 10, false, 'club', 9999, 'delivery-fee');
 
   RETURN jsonb_build_object('club_id', new_club_id, 'club_code', v_code);
 EXCEPTION

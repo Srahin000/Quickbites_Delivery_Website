@@ -188,7 +188,7 @@ const Partners = () => {
       if (verifyError) throw verifyError;
 
       if (!club || !club.id) {
-        setDashboardError('Invalid club code or password.');
+        setDashboardError('Invalid club code or password, or your club is still pending activation.');
         setDashboardLoading(false);
         return;
       }
@@ -496,11 +496,11 @@ const Partners = () => {
             <div className="text-6xl mb-6">🎉</div>
             <h2 className="text-3xl font-bold text-gray-800 mb-4">Welcome Aboard!</h2>
             <p className="text-lg text-gray-600 mb-8">
-              Your partner account has been created. Share your club code with members for the QuickBites
-              app. Your organization earns{' '}
+              Your partner account has been created and is pending admin approval. Once your club and code
+              are activated, share your club code with members in the QuickBites app. Your organization earns{' '}
               <span className="font-bold text-quickbites-purple">{COMMISSION_PERCENTAGE}%</span> of each
               order's food subtotal (excluding tax and delivery) when the code is used at checkout.
-              Members can still get delivery-fee discounts when your code is applied as a coupon where
+              Members can also get delivery-fee discounts when your code is activated as a coupon where
               configured.
             </p>
 
@@ -520,7 +520,8 @@ const Partners = () => {
             </div>
 
             <p className="text-gray-500 text-sm mb-8">
-              Save your club code and dashboard password — you need both to open the partner dashboard.
+              Save your club code and dashboard password. An admin needs to activate your club and coupon
+              code before dashboard login and checkout usage will work.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
